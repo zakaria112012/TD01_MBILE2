@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
@@ -43,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
         String[] from = new String[]{"titre", "acteur","icon"};
         int[] to = new int[] {R.id.titre, R.id.acteur,R.id.photo};
         final int[] images = {R.drawable.nophoto};
-
+        ImageView photo=(ImageView) findViewById(R.id.photo);
 
         sa = new CustomAdapter(this,list,R.layout.listcontenent, from, to);
         lv = (ListView)findViewById(R.id.listView);
@@ -93,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            
+
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int position, long l) {
 
@@ -106,6 +107,7 @@ public class MainActivity extends AppCompatActivity {
                 //map.put("photo", images[i % images.length] + "");
 
                 map_film.put("photo", downloadImageTask.execute(urlImage));
+                
                 sa.notifyDataSetChanged();
                 return true ;
 
@@ -114,6 +116,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
+
 
     private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
 

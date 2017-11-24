@@ -1,23 +1,32 @@
 package com.example.kp.myapplication;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-
 public class MainActivity extends AppCompatActivity {
 
     SimpleAdapter sa = null;
+    private static String urlImage = "http://lorempixel.com/200/200/nature/";
     List<HashMap<String, Object>> list = null;
-    HashMap<String, Object> map_personn = null;
+    HashMap<String, Object> map_film = null;
     ListView lv = null;
     static int i = 0;
 
@@ -31,9 +40,9 @@ public class MainActivity extends AppCompatActivity {
 
         list = new ArrayList<>();
 
-        String[] from = new String[]{"nom", "prenom","icon"};
-        int[] to = new int[] {R.id.nom, R.id.prenom,R.id.photo};
-        final int[] images = {R.drawable.femme,R.drawable.homme};
+        String[] from = new String[]{"titre", "acteur","icon"};
+        int[] to = new int[] {R.id.titre, R.id.acteur,R.id.photo};
+        final int[] images = {R.drawable.nophoto};
 
 
         sa = new CustomAdapter(this,list,R.layout.listcontenent, from, to);
@@ -41,9 +50,9 @@ public class MainActivity extends AppCompatActivity {
         lv.setAdapter(sa);
 
         HashMap<String,Object> map1=new HashMap<>();
-        map1.put("nom","medjir");
-        map1.put("prenom","zakaria");
-        map1.put("icon",R.drawable.homme);
+        map1.put("titre","Fast & Furious");
+        map1.put("acteur","Vin Diesel");
+        map1.put("icon",R.drawable.nophoto);
         list.add(map1);
         sa.notifyDataSetChanged();
 
@@ -53,15 +62,15 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onClick(View view) {
-                        map_personn = new HashMap<String, Object>();
-                        map_personn.put("icon",images[i%images.length]);
-                        map_personn.put("nom", "nom" +i);
-                        map_personn.put("prenom", "prenom" +i);
+                        map_film = new HashMap<String, Object>();
+                        map_film.put("icon",R.drawable.nophoto);
+                        map_film.put("titre", "titre" +i);
+                        map_film.put("acteur", "acteur" +i);
 
 
                         i++;
 
-                        list.add(map_personn);
+                        list.add(map_film);
                         sa.notifyDataSetChanged();
                         lv.setAdapter(sa);
 
@@ -70,32 +79,35 @@ public class MainActivity extends AppCompatActivity {
         );
 
 
-        Button buton_clear = (Button)findViewById(R.id.buttonReset);
-        buton_clear.setOnClickListener(
-                new View.OnClickListener() {
+        Button update = (Button) findViewById(R.id.buttonUpdate);
 
+        update.setOnClickListener(
+                new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        list.clear();
-                        sa.notifyDataSetChanged();
-                        i=0;
+
+
                     }
-                }
-        );
+                });
+
+
 
         lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-
-
-
+            
             @Override
-
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int position, long l) {
 
-                list.remove(position);
-
+             /*   list.remove(position);
                 sa.notifyDataSetChanged();
-
                 return true;
+                */
+
+                DownloadImageTask downloadImageTask = new DownloadImageTask();
+                //map.put("photo", images[i % images.length] + "");
+
+                map_film.put("photo", downloadImageTask.execute(urlImage));
+                sa.notifyDataSetChanged();
+                return true ;
 
             }
 
@@ -103,6 +115,45 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
 
+        @Override
+        protected Bitmap doInBackground(String... stringUrl) {
+
+            Log.i(this.getClass().getCanonicalName(), "Entre doInBackground");
+            InputStream input = null;
+            HttpURLConnection connection = null;
+            Bitmap bitmap = null;
+
+            try {
+
+                URL url = new URL(stringUrl[0]);
+                connection = (HttpURLConnection) url.openConnection();
+                connection.connect();
+                input = new BufferedInputStream(connection.getInputStream());
+                bitmap = BitmapFactory.decodeStream(input);
+
+            } catch (Exception e) {
+                Log.e(this.getClass().getCanonicalName(), "Erreur lors de la création de l'image");
+            } finally {
+                try {
+                    if (input != null)
+                        input.close();
+                } catch(IOException ignored) {
+                    Log.e(this.getClass().getCanonicalName(), "Erreur input");
+                }
+                if (connection != null)
+                    connection.disconnect();
+            }
+            Log.i(this.getClass().getCanonicalName(), "Quitte doInBackground");
+            return bitmap;
+        }
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            //imageView.setImageBitmap(bitmap);
+            //map.put("photo", bitmap);
+            Log.i(this.getClass().getCanonicalName(), "Entre onPostExecute");
+        }
     }
+}
 

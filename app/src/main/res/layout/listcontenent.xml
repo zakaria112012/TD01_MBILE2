@@ -28,7 +28,7 @@
 
 
 
-    <TextView android:id="@+id/nom"
+    <TextView android:id="@+id/titre"
 
         android:layout_height="fill_parent"
 
@@ -40,7 +40,7 @@
 
 
 
-    <TextView android:id="@+id/prenom"
+    <TextView android:id="@+id/acteur"
 
         android:layout_height="fill_parent"
 
